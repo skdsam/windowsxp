@@ -1,0 +1,11 @@
+﻿================================================================================
+PROJECT IDEAS & TODO LIST
+================================================================================
+1. ADD PINBALL GAME (Classic XP Style)
+2. IMPLEMENT CONTROL PANEL TABS
+3. ADD INTERNET EXPLORER 6.0 SIMULATOR
+4. IMPLEMENT CALCULATOR (Basic & Scientific)
+5. ADD CUSTOM THEME SUPPORT (Zune, Royale)
+6. FIX START MENU HOVER BLANCHING ISSUE
+7. ADD SOUND EFFECTS (Startup, Shutdown, Errors)
+================================================================================

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows XP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="assets/xp_logo.png">
+</head>
+
+<body>
+    <div id="desktop">
+        <div class="desktop-icons">
+            <div class="icon" id="icon-ie" ondblclick="openApp('ie')"
+                title="Finds and displays information and Web sites on the Internet.">
+                <img src="assets/internetexplorer.png" alt="Internet Explorer"
+                    style="width: 32px; height: 32px; margin-bottom: 5px;">
+                <span>Internet Explorer</span>
+            </div>
+            <div class="icon" id="icon-notepad" ondblclick="openApp('notepad')"
+                title="Creates and edits text files using basic text formatting.">
+                <img src="assets/Notepad_WinXP.webp" alt="Notepad"
+                    style="width: 32px; height: 32px; margin-bottom: 5px;">
+                <span>Notepad</span>
+            </div>
+            <div class="icon" id="icon-computer" ondblclick="openApp('my-computer')"
+                title="Displays the files and folders on your computer.">
+                <img src="assets/mycomputer.webp" alt="My Computer"
+                    style="width: 32px; height: 32px; margin-bottom: 5px;">
+                <span>My Computer</span>
+            </div>
+            <div class="icon" id="icon-recycle" ondblclick="openApp('recycle-bin')"
+                title="Contains files and folders that you have deleted.">
+                <img src="assets/trash.png" alt="Recycle Bin">
+                <span>Recycle Bin</span>
+            </div>
+        </div>
+
+        <div id="window-container">
+            <!-- Dynamic windows will be injected here -->
+        </div>
+
+        <!-- Desktop Context Menu -->
+        <div id="context-menu" class="xp-menu" style="display: none;">
+            <ul>
+                <li>Arrange Icons By <span>▶</span></li>
+                <li>Refresh</li>
+                <hr>
+                <li>Paste</li>
+                <li>Paste Shortcut</li>
+                <hr>
+                <li>New <span>▶</span></li>
+                <hr>
+                <li>Properties</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="taskbar">
+        <div id="start-button">
+            <img src="assets/windows-xp.png" alt=""
+                style="width: 18px; height: 18px; margin-right: 5px; vertical-align: middle;">
+            <span>start</span>
+        </div>
+        <div id="taskbar-apps">
+            <!-- Active app tabs -->
+        </div>
+        <div id="system-tray">
+            <span class="tray-icon" id="tray-collapse" title="Show hidden icons"
+                style="font-size: 10px; margin-right: 5px;">◀</span>
+            <span class="tray-icon" id="tray-net"
+                title="Local Area Connection&#10;Speed: 100.0 Mbps&#10;Status: Connected"
+                onclick="trayAction('net')"><span>🛜</span></span>
+            <span class="tray-icon" id="tray-sec" title="Your computer might be at risk"
+                onclick="trayAction('sec')"><span>🛡️</span></span>
+            <span class="tray-icon" id="tray-vol" title="Volume" onclick="trayAction('vol')"><span>🔊</span></span>
+            <div id="taskbar-clock" onclick="trayAction('clock')" title="Click for Date and Time Properties">12:00 PM
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="start-menu" class="hidden">
+        <div class="start-menu-header">
+            <img src="assets/user.jpg" class="user-avatar" alt="User">
+            <span class="user-name">User</span>
+        </div>
+        <div class="start-menu-content">
+            <div class="start-menu-left">
+                <div class="start-item" onclick="openApp('ie')">
+                    <img src="assets/internetexplorer.png" style="width: 24px; height: 24px; margin-right: 10px;"
+                        alt="">
+                    <div class="start-item-text">
+                        <div class="title" style="font-weight: bold;">Internet Explorer</div>
+                    </div>
+                </div>
+                <hr style="margin: 5px 10px; border-top: 1px solid #ddd;">
+                <div class="start-item" onclick="openApp('notepad')">
+                    <img src="assets/Notepad_WinXP.webp" style="width: 24px; height: 24px; margin-right: 10px;" alt="">
+                    <div class="start-item-text">
+                        <div class="title">Notepad</div>
+                    </div>
+                </div>
+                <div class="start-item" onclick="openApp('calc')">
+                    <div style="font-size: 24px; margin-right: 10px;">🧮</div>
+                    <div class="start-item-text">
+                        <div class="title">Calculator</div>
+                    </div>
+                </div>
+                <div class="start-item" onclick="openApp('minesweeper')">
+                    <img src="assets/minesweep.webp" style="width: 24px; height: 24px; margin-right: 10px;" alt="">
+                    <div class="start-item-text">
+                        <div class="title">Minesweeper</div>
+                    </div>
+                </div>
+            </div>
+            <div class="start-menu-right">
+                <div class="start-item-right" onclick="openApp('my-documents')">My Documents</div>
+                <div class="start-item-right" onclick="openApp('my-pictures')">My Pictures</div>
+                <div class="start-item-right" onclick="openApp('my-music')">My Music</div>
+                <hr>
+                <div class="start-item-right" onclick="openApp('control-panel')">Control Panel</div>
+                <div class="start-item-right">Printers and Faxes</div>
+                <hr>
+                <div class="start-item-right" onclick="openApp('help')">Help and Support</div>
+                <div class="start-item-right" onclick="openApp('search')">Search</div>
+                <div class="start-item-right" onclick="openApp('run')">Run...</div>
+            </div>
+        </div>
+        <div class="start-menu-footer">
+            <div class="log-off" onclick="showShutdownDialog('logoff')">Log Off</div>
+            <div class="turn-off" onclick="showShutdownDialog('shutdown')">Turn Off Computer</div>
+        </div>
+    </div>
+
+    <!-- Shutdown Dialog -->
+    <div id="shutdown-overlay"></div>
+    <div id="shutdown-dialog">
+        <div class="shutdown-header">
+            <span>Turn off computer</span>
+            <img src="assets/windows-xp.png" alt="" style="width: 20px; height: 20px;">
+        </div>
+        <div class="shutdown-content">
+            <div class="shutdown-btn-container" onclick="location.reload()">
+                <div class="shutdown-btn-icon" style="background: #7ba0e8;">⌛</div>
+                <div class="shutdown-btn-label">Stand By</div>
+            </div>
+            <div class="shutdown-btn-container" onclick="shutdownNow()">
+                <div class="shutdown-btn-icon" style="background: #cc0000;">⭕</div>
+                <div class="shutdown-btn-label">Turn Off</div>
+            </div>
+            <div class="shutdown-btn-container" onclick="location.reload()">
+                <div class="shutdown-btn-icon" style="background: #008800;">🔄</div>
+                <div class="shutdown-btn-label">Restart</div>
+            </div>
+        </div>
+        <div class="shutdown-footer">
+            <button onclick="hideShutdownDialog()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

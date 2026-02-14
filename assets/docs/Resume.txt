@@ -1,0 +1,15 @@
+﻿================================================================================
+JOE SMITH - SOFTWARE ENGINEER
+================================================================================
+EXPERIENCE:
+- Lead Web Developer at RetroTech (2002-Present)
+- Junior C++ Programmer at LegacySystems (1998-2002)
+
+SKILLS:
+- HTML 4.01, CSS 2.1, JavaScript (ES3)
+- PHP 4, Macromedia Flash
+- Troubleshooting Windows 98/2000/XP
+
+EDUCATION:
+- B.S in Computer Science, Tech University (1998)
+================================================================================
