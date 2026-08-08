@@ -10,7 +10,9 @@ const config = {
     autoArrange: JSON.parse(localStorage.getItem('xp_auto_arrange')) || false,
     alignToGrid: JSON.parse(localStorage.getItem('xp_align_to_grid')) || true,
     theme: localStorage.getItem('xp_theme') || 'classic',
-    wallpaper: localStorage.getItem('xp_wallpaper') || 'bliss'
+    wallpaper: localStorage.getItem('xp_wallpaper') || 'bliss',
+    wallpaperMode: localStorage.getItem('xp_wallpaper_mode') || 'stretch',
+    customWallpaper: localStorage.getItem('xp_custom_wallpaper') || ''
 };
 
 function applyTheme() {
@@ -20,21 +22,27 @@ function applyTheme() {
 
     const wallpaperMap = {
         bliss: 'url("assets/bliss.jpg")',
+        field: 'url("assets/pictures/Field.jpg")',
+        waterfall: 'url("assets/pictures/Waterfall.jpg")',
+        lighthouse: 'url("assets/pictures/Lighthouse.jpg")',
         blue: 'linear-gradient(135deg, #0c5ca4 0%, #1f77d1 35%, #73b7ff 100%)',
-        dusk: 'linear-gradient(135deg, #231f42 0%, #3a3f7d 35%, #5d6ba8 100%)'
+        dusk: 'linear-gradient(135deg, #231f42 0%, #3a3f7d 35%, #5d6ba8 100%)',
+        custom: config.customWallpaper ? `url("${config.customWallpaper}")` : 'url("assets/bliss.jpg")'
     };
 
     const desktop = document.getElementById('desktop');
     if (desktop) {
         desktop.style.background = wallpaperMap[config.wallpaper] || wallpaperMap.bliss;
-        desktop.style.backgroundSize = 'cover';
-        desktop.style.backgroundPosition = 'center';
+        const modes={stretch:{size:'100% 100%',repeat:'no-repeat',position:'center'},center:{size:'auto',repeat:'no-repeat',position:'center'},tile:{size:'auto',repeat:'repeat',position:'top left'},fill:{size:'cover',repeat:'no-repeat',position:'center'}};
+        const mode=modes[config.wallpaperMode]||modes.stretch;
+        desktop.style.backgroundSize=mode.size;desktop.style.backgroundRepeat=mode.repeat;desktop.style.backgroundPosition=mode.position;
     }
 
     const appTabs = document.querySelectorAll('.taskbar-tab');
     appTabs.forEach(tab => tab.style.opacity = '1');
     localStorage.setItem('xp_theme', config.theme);
     localStorage.setItem('xp_wallpaper', config.wallpaper);
+    localStorage.setItem('xp_wallpaper_mode', config.wallpaperMode);
 }
 
 function 恢复RecycleBinState() {
@@ -352,6 +360,12 @@ function resetContextMenu() {
                 </ul>
             </li>
             <li onclick="refreshDesktop()">Refresh</li>
+            <li class="has-submenu">Appearance <span class="arrow">▶</span><ul>
+                <li onclick="switchWallpaper('bliss')">Bliss</li><li onclick="switchWallpaper('field')">Field</li><li onclick="switchWallpaper('waterfall')">Waterfall</li><li onclick="switchWallpaper('lighthouse')">Lighthouse</li>
+                <hr><li onclick="chooseDesktopPicture()">Choose Picture...</li>
+                <hr><li onclick="setWallpaperMode('stretch')">Stretch</li><li onclick="setWallpaperMode('center')">Center</li><li onclick="setWallpaperMode('tile')">Tile</li><li onclick="setWallpaperMode('fill')">Fill</li>
+                <hr><li onclick="switchTheme('classic')">Luna Blue</li><li onclick="switchTheme('royale')">Royale</li><li onclick="switchTheme('graphite')">Graphite</li>
+            </ul></li>
             <hr>
             <li class="disabled">Paste</li>
             <li class="disabled">Paste Shortcut</li>
@@ -379,7 +393,7 @@ function refreshDesktop() {
     }
 }
 
-function showProperties() {
+function showSystemProperties() {
     const content = `
         <div style="padding: 20px; font-size: 11px;">
             <div style="display: flex; align-items: center; margin-bottom: 20px;">
@@ -406,6 +420,21 @@ function showProperties() {
     `;
     createWindow('System Properties', '⚙️', content, 'win-properties', { width: '400px', height: '450px', left: '200px', top: '100px' });
 }
+
+function showProperties() {
+    const existing=document.getElementById('win-display-properties');if(existing){focusWindow('win-display-properties');return}
+    const choices=[['bliss','Bliss'],['field','Field'],['waterfall','Waterfall'],['lighthouse','Lighthouse'],['blue','Windows Blue'],['dusk','Dusk']];
+    const content=`<div class="display-properties"><div class="display-tabs"><span>Themes</span><span class="active">Desktop</span><span>Screen Saver</span><span>Appearance</span><span>Settings</span></div>
+        <div class="display-panel"><div class="monitor-preview"><div id="wallpaper-preview"></div></div><label>Background:</label><div class="wallpaper-picker">${choices.map(([id,label])=>`<button onclick="switchWallpaper('${id}');updateDisplayPreview()" class="wallpaper-choice ${config.wallpaper===id?'active':''}" data-wallpaper="${id}">${label}</button>`).join('')}</div>
+        <div class="display-row"><button onclick="chooseDesktopPicture()">Browse...</button><label>Position: <select onchange="setWallpaperMode(this.value);updateDisplayPreview()"><option value="stretch" ${config.wallpaperMode==='stretch'?'selected':''}>Stretch</option><option value="center" ${config.wallpaperMode==='center'?'selected':''}>Center</option><option value="tile" ${config.wallpaperMode==='tile'?'selected':''}>Tile</option><option value="fill" ${config.wallpaperMode==='fill'?'selected':''}>Fill</option></select></label></div>
+        <fieldset><legend>Color scheme</legend><label><input type="radio" name="display-theme" onchange="switchTheme('classic')" ${config.theme==='classic'?'checked':''}> Luna Blue</label><label><input type="radio" name="display-theme" onchange="switchTheme('royale')" ${config.theme==='royale'?'checked':''}> Royale</label><label><input type="radio" name="display-theme" onchange="switchTheme('graphite')" ${config.theme==='graphite'?'checked':''}> Graphite</label></fieldset></div>
+        <div class="display-buttons"><button onclick="closeWindow('win-display-properties')">OK</button><button onclick="closeWindow('win-display-properties')">Cancel</button><button onclick="applyTheme();updateDisplayPreview()">Apply</button></div><input id="desktop-picture-input" type="file" accept="image/*" hidden onchange="loadDesktopPicture(this)"></div>`;
+    createWindow('Display Properties','🖥️',content,'win-display-properties',{width:'510px',height:'545px',left:'220px',top:'80px'});requestAnimationFrame(updateDisplayPreview)
+}
+function chooseDesktopPicture(){let input=document.getElementById('desktop-picture-input');if(!input){input=document.createElement('input');input.type='file';input.accept='image/*';input.hidden=true;input.onchange=()=>loadDesktopPicture(input);document.body.appendChild(input)}input.click()}
+function loadDesktopPicture(input){const file=input.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Please choose an image file.');return}const reader=new FileReader();reader.onload=()=>{config.customWallpaper=reader.result;config.wallpaper='custom';try{localStorage.setItem('xp_custom_wallpaper',config.customWallpaper)}catch{showBubble('Display Properties','The image is too large to save permanently, but it will be used for this session.')}applyTheme();updateDisplayPreview()};reader.readAsDataURL(file);input.value=''}
+function setWallpaperMode(mode){config.wallpaperMode=mode;applyTheme()}
+function updateDisplayPreview(){const preview=document.getElementById('wallpaper-preview'),desktop=document.getElementById('desktop');if(!preview||!desktop)return;preview.style.backgroundImage=desktop.style.backgroundImage;preview.style.backgroundSize=desktop.style.backgroundSize;preview.style.backgroundPosition=desktop.style.backgroundPosition;preview.style.backgroundRepeat=desktop.style.backgroundRepeat;document.querySelectorAll('.wallpaper-choice').forEach(b=>b.classList.toggle('active',b.dataset.wallpaper===config.wallpaper))}
 
 function toggleAutoArrange() {
     config.autoArrange = !config.autoArrange;
@@ -664,8 +693,12 @@ function openApp(appId) {
                     </div>
                 </div>
             `, 'win-search', { width: '600px', height: '400px', left: '100px', top: '100px' });
+            requestAnimationFrame(doSearch);
         },
-        help: () => { /* existing help omitted for brevity */ },
+        help: () => {
+            const existing=document.getElementById('win-help');if(existing){focusWindow('win-help');return}
+            createWindow('Help and Support Center','❓',createHelpContent(),'win-help',{width:'740px',height:'540px',left:'70px',top:'55px'});
+        },
         ie: () => {
             const existing = document.getElementById('win-ie');
             if (existing) { focusWindow('win-ie'); return; }
@@ -687,6 +720,10 @@ function openApp(appId) {
             if (existing) { focusWindow('win-paint'); return; }
             createWindow('untitled - Paint', '🎨', createPaintContent(), 'win-paint', { width:'720px', height:'520px', left:'90px', top:'55px' });
             requestAnimationFrame(initPaint);
+        },
+        'media-player': () => {
+            const existing=document.getElementById('win-mplayer');if(existing){focusWindow('win-mplayer');return}
+            createWindow('Windows Media Player','▶',createMediaPlayerContent(),'win-mplayer',{width:'680px',height:'500px',left:'160px',top:'75px'});requestAnimationFrame(initMediaPlayer);
         },
         cv: () => {
             const existing = document.getElementById('win-cv');
@@ -745,6 +782,8 @@ function handleRun() {
         calculator: 'calc',
         mspaint: 'paint',
         paint: 'paint',
+        wmplayer: 'media-player',
+        'media player': 'media-player',
         cv: 'cv',
         resume: 'cv',
         control: 'control-panel',
@@ -979,9 +1018,15 @@ function createWindow(title, icon, contentHtml, windowId, initialPos) {
     if (windowId === 'win-notepad') {
         const savedText = localStorage.getItem('xp_notepad_content');
         if (savedText) win.querySelector('textarea').value = savedText;
+        const savedStyle=JSON.parse(localStorage.getItem('xp_notepad_style')||'{}');
+        Object.assign(win.querySelector('textarea').style,savedStyle);
         win.querySelector('textarea').addEventListener('input', (e) => {
             localStorage.setItem('xp_notepad_content', e.target.value);
+            updateNotepadStatus();
         });
+        win.querySelector('textarea').addEventListener('click',updateNotepadStatus);
+        win.querySelector('textarea').addEventListener('keyup',updateNotepadStatus);
+        updateNotepadStatus();
     }
 
     return windowId;
@@ -1060,24 +1105,41 @@ function createNotepadContent() {
                 </div>
                 <div class="menu-item">Edit
                     <div class="dropdown-content">
-                        <div class="dropdown-item" onclick="document.execCommand('undo')">Undo</div>
+                        <div class="dropdown-item" onclick="notepadAction('undo')">Undo</div>
+                        <div class="dropdown-item" onclick="notepadAction('redo')">Redo</div>
                         <hr><div class="dropdown-item" onclick="document.execCommand('cut')">Cut</div>
                         <div class="dropdown-item" onclick="document.execCommand('copy')">Copy</div>
                         <div class="dropdown-item" onclick="document.execCommand('paste')">Paste</div>
+                        <div class="dropdown-item" onclick="notepadAction('select-all')">Select All</div>
+                        <hr><div class="dropdown-item" onclick="notepadAction('find')">Find / Replace...</div>
+                        <div class="dropdown-item" onclick="notepadAction('time-date')">Time/Date</div>
                     </div>
                 </div>
                 <div class="menu-item">Format
                     <div class="dropdown-content">
-                        <div class="dropdown-item" onclick="notepadAction('toggle-bold')">Font... (Bold)</div>
+                        <div class="dropdown-item" onclick="notepadAction('word-wrap')"><span id="word-wrap-check">✓</span> Word Wrap</div>
+                        <div class="dropdown-item" onclick="notepadAction('toggle-bold')">Bold</div>
+                        <div class="dropdown-item" onclick="notepadAction('toggle-italic')">Italic</div>
+                        <div class="dropdown-item" onclick="notepadAction('toggle-underline')">Underline</div>
                     </div>
                 </div>
+                <div class="menu-item">View<div class="dropdown-content"><div class="dropdown-item" onclick="notepadAction('status-bar')">Status Bar</div></div></div>
+            </div>
+            <div class="notepad-toolbar">
+                <select id="notepad-font" onchange="setNotepadStyle('fontFamily',this.value)" title="Font"><option>Courier New</option><option>Arial</option><option>Tahoma</option><option>Times New Roman</option><option>Verdana</option></select>
+                <select id="notepad-size" onchange="setNotepadStyle('fontSize',this.value+'px')" title="Font size"><option>10</option><option>12</option><option selected>14</option><option>16</option><option>18</option><option>24</option><option>32</option></select>
+                <button onclick="notepadAction('toggle-bold')" title="Bold"><b>B</b></button><button onclick="notepadAction('toggle-italic')" title="Italic"><i>I</i></button><button onclick="notepadAction('toggle-underline')" title="Underline"><u>U</u></button>
+                <button onclick="setNotepadStyle('textAlign','left')" title="Align left">⇤</button><button onclick="setNotepadStyle('textAlign','center')" title="Align centre">↔</button><button onclick="setNotepadStyle('textAlign','right')" title="Align right">⇥</button>
+                <label class="notepad-color" title="Text colour">A<input type="color" value="#000000" onchange="setNotepadStyle('color',this.value)"></label>
             </div>
             <textarea class="notepad-textarea" id="notepad-text"></textarea>
+            <div class="notepad-status" id="notepad-status"><span>Ln 1, Col 1</span><span>0 words</span><span>0 characters</span></div>
+            <input id="notepad-file-input" type="file" accept=".txt,text/plain" hidden onchange="openNotepadFile(this)">
         </div>
     `;
 }
 
-let notepadState = { fileName: 'Untitled', isBold: false };
+let notepadState = { fileName: 'Untitled', isBold: false, isItalic:false, isUnderline:false, wordWrap:true, statusBar:true };
 
 function notepadAction(type) {
     const textarea = document.getElementById('notepad-text');
@@ -1089,6 +1151,9 @@ function notepadAction(type) {
         textarea.value = '';
         notepadState.fileName = 'Untitled';
         titleSpan.textContent = 'Untitled - Notepad';
+        updateNotepadStatus();
+    } else if (type === 'open') {
+        document.getElementById('notepad-file-input')?.click();
     } else if (type === 'save' || type === 'save-as') {
         const name = prompt('File name:', notepadState.fileName);
         if (name) {
@@ -1099,9 +1164,26 @@ function notepadAction(type) {
         }
     } else if (type === 'toggle-bold') {
         notepadState.isBold = !notepadState.isBold;
-        textarea.classList.toggle('bold-text', notepadState.isBold);
-    }
+        textarea.style.fontWeight = notepadState.isBold ? 'bold' : 'normal';
+    } else if (type === 'toggle-italic') {
+        notepadState.isItalic=!notepadState.isItalic; textarea.style.fontStyle=notepadState.isItalic?'italic':'normal';
+    } else if (type === 'toggle-underline') {
+        notepadState.isUnderline=!notepadState.isUnderline; textarea.style.textDecoration=notepadState.isUnderline?'underline':'none';
+    } else if (type === 'word-wrap') {
+        notepadState.wordWrap=!notepadState.wordWrap; textarea.classList.toggle('no-wrap',!notepadState.wordWrap); document.getElementById('word-wrap-check').textContent=notepadState.wordWrap?'✓':'';
+    } else if (type === 'status-bar') {
+        notepadState.statusBar=!notepadState.statusBar; document.getElementById('notepad-status').style.display=notepadState.statusBar?'flex':'none';
+    } else if (type === 'select-all') textarea.select();
+    else if (type === 'undo') { textarea.focus(); document.execCommand('undo'); }
+    else if (type === 'redo') { textarea.focus(); document.execCommand('redo'); }
+    else if (type === 'time-date') { const start=textarea.selectionStart; textarea.setRangeText(new Date().toLocaleString(),start,textarea.selectionEnd,'end'); updateNotepadStatus(); }
+    else if (type === 'find') showNotepadFind();
 }
+
+function setNotepadStyle(property,value){const textarea=document.getElementById('notepad-text');if(textarea){textarea.style[property]=value;localStorage.setItem('xp_notepad_style',JSON.stringify({fontFamily:textarea.style.fontFamily,fontSize:textarea.style.fontSize,color:textarea.style.color,textAlign:textarea.style.textAlign}))}}
+function updateNotepadStatus(){const textarea=document.getElementById('notepad-text'),status=document.getElementById('notepad-status');if(!textarea||!status)return;const before=textarea.value.slice(0,textarea.selectionStart),lines=before.split('\n'),words=(textarea.value.trim().match(/\S+/g)||[]).length;status.innerHTML=`<span>Ln ${lines.length}, Col ${lines.at(-1).length+1}</span><span>${words} words</span><span>${textarea.value.length} characters</span>`}
+function openNotepadFile(input){const file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const textarea=document.getElementById('notepad-text');if(textarea)textarea.value=reader.result;notepadState.fileName=file.name.replace(/\.txt$/i,'');const title=document.querySelector('#win-notepad .window-header span:nth-child(2)');if(title)title.textContent=`${file.name} - Notepad`;updateNotepadStatus()};reader.readAsText(file);input.value=''}
+function showNotepadFind(){const textarea=document.getElementById('notepad-text');if(!textarea)return;const find=prompt('Find what:');if(find===null||find==='')return;const replacement=prompt('Replace with (Cancel to only find):');if(replacement===null){const index=textarea.value.toLowerCase().indexOf(find.toLowerCase(),textarea.selectionEnd);if(index<0){alert(`Cannot find "${find}"`);return}textarea.focus();textarea.setSelectionRange(index,index+find.length)}else{const escaped=find.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');textarea.value=textarea.value.replace(new RegExp(escaped,'gi'),replacement);updateNotepadStatus()}}
 
 function createDesktopFileIcon(name) {
     const container = document.querySelector('.desktop-icons');
@@ -1268,7 +1350,7 @@ function createDesktopFile(baseName, type) {
     if (config.autoArrange) alignIconsNow();
 }
 
-function doSearch() {
+function doSearchLegacy() {
     const fileTerm = document.getElementById('search-file')?.value.trim().toLowerCase() || '';
     const textTerm = document.getElementById('search-text')?.value.trim().toLowerCase() || '';
     const resultsPanel = document.getElementById('search-results');
@@ -1294,7 +1376,7 @@ function doSearch() {
     `).join('');
 }
 
-function openSearchItem(item) {
+function openSearchItemLegacy(item) {
     const map = {
         'Notepad': 'notepad',
         'Calculator': 'calc',
@@ -1309,6 +1391,21 @@ function openSearchItem(item) {
     if (map[item]) openApp(map[item]);
     else if (item.endsWith('.txt')) openTextFile(item, true);
 }
+
+function getSearchCatalog(){const items=[
+    ['SkdSam CV','cv','document'],['SkdSam-CV.txt','cv','document'],['Resume.txt','text','document'],['Ideas.txt','text','document'],
+    ['My Computer','my-computer','folder'],['My Documents','my-documents','folder'],['My Music','my-music','folder'],['My Pictures','my-pictures','folder'],['Recycle Bin','recycle-bin','folder'],
+    ['Internet Explorer','ie','application'],['Notepad','notepad','application'],['WordPad','wordpad','application'],['Paint','paint','application'],['Calculator','calc','application'],['Command Prompt','cmd','application'],['Task Manager','task-manager','application'],['Control Panel','control-panel','application'],['Help and Support','help','application'],
+    ['Lighthouse.jpg','Lighthouse.jpg','picture'],['Waterfall.jpg','Waterfall.jpg','picture'],['Field.jpg','Field.jpg','picture'],['SoundHelix-Song-1.mp3','SoundHelix-Song-1.mp3','music'],['SoundHelix-Song-2.mp3','SoundHelix-Song-2.mp3','music']
+];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key?.startsWith('xp_file_'))items.push([key.slice(8)+'.txt',key.slice(8),'local-text'])}return items}
+function doSearch(){const fileTerm=document.getElementById('search-file')?.value.trim().toLowerCase()||'',textTerm=document.getElementById('search-text')?.value.trim().toLowerCase()||'',panel=document.getElementById('search-results');if(!panel)return;const matches=getSearchCatalog().filter(([name,id,type])=>{const content=type==='local-text'?(localStorage.getItem(`xp_file_${id}`)||''):'';return(!fileTerm||name.toLowerCase().includes(fileTerm))&&(!textTerm||name.toLowerCase().includes(textTerm)||content.toLowerCase().includes(textTerm))});panel.innerHTML=`<div class="search-heading">Search Results <span>${matches.length} item${matches.length===1?'':'s'} found</span></div>`+(matches.length?matches.map(([name,id,type])=>`<button class="search-result" onclick="openSearchResult('${encodeURIComponent(id)}','${type}')"><span>${searchTypeIcon(type)}</span><span><b>${escapeHtml(name)}</b><small>${type.replace('-',' ')}</small></span></button>`).join(''):'<div class="search-empty">No files or folders matched your search.</div>')}
+function searchTypeIcon(type){return({application:'⚙️',folder:'📁',document:'📄',picture:'🖼️',music:'🎵','local-text':'📄'})[type]||'📄'}
+function openSearchResult(encoded,type){const id=decodeURIComponent(encoded);if(type==='picture')openImage(id);else if(type==='music')playMusic(id);else if(type==='text')openTextFile(id,true);else if(type==='local-text')openTextFile(id,false);else openApp(id)}
+
+function createHelpContent(){return `<div class="help-center"><header><div><h2>Help and Support Center</h2><p>Learn about Windows XP and get assistance.</p></div><div class="help-search"><input id="help-query" placeholder="Type a question" onkeydown="if(event.key==='Enter')searchHelp()"><button onclick="searchHelp()">➜</button></div></header><main><section><h3>Pick a Help topic</h3><button onclick="showHelpTopic('desktop')"><b>🖥️ Customizing your computer</b><span>Change wallpaper, themes and desktop settings.</span></button><button onclick="showHelpTopic('files')"><b>📁 Files and folders</b><span>Create, find, open and recycle documents.</span></button><button onclick="showHelpTopic('internet')"><b>🌐 Networking and the Web</b><span>Browse websites and check your connection.</span></button><button onclick="showHelpTopic('programs')"><b>⚙️ Using Windows programs</b><span>Learn about Notepad, Paint, WordPad and more.</span></button></section><aside id="help-details"><h3>Did you know?</h3><p>Press <b>Ctrl+R</b> to open Run, or right-click the desktop to change its appearance.</p><h3>Popular tasks</h3><a onclick="openApp('search')">Search for files</a><a onclick="showProperties()">Change the desktop background</a><a onclick="openApp('control-panel')">Open Control Panel</a></aside></main></div>`}
+const helpTopics={desktop:['Customizing your computer','Right-click an empty area of the desktop and choose Appearance or Properties. You can select an XP wallpaper, upload your own picture, choose Stretch, Center, Tile or Fill, and change the Luna colour scheme.'],files:['Files and folders','Open My Documents from Start. Double-click files to open them, drag user-created text files to Recycle Bin, and use Search to find programs, documents, pictures and music.'],internet:['Networking and the Web','Open Internet Explorer, type an address and press Enter. Some modern websites block iframe viewing; use Open in new window when that happens.'],programs:['Using Windows programs','Start includes Notepad, WordPad, Paint, Calculator, Minesweeper and Command Prompt. You can also launch them by name from Run.']};
+function showHelpTopic(id){const target=document.getElementById('help-details'),topic=helpTopics[id];if(target&&topic)target.innerHTML=`<h3>${topic[0]}</h3><p>${topic[1]}</p><button onclick="this.parentElement.innerHTML='<h3>Did you know?</h3><p>Use the Start menu to explore this Windows XP clone.</p>'">Back</button>`}
+function searchHelp(){const query=document.getElementById('help-query')?.value.toLowerCase()||'';const match=Object.entries(helpTopics).find(([,v])=>v.join(' ').toLowerCase().includes(query));if(match)showHelpTopic(match[0]);else{const target=document.getElementById('help-details');if(target)target.innerHTML=`<h3>Search Results</h3><p>No help topics matched “${escapeHtml(query)}”. Try wallpaper, files, internet or programs.</p>`}}
 
 function createDesktopFolder() {
     const container = document.querySelector('.desktop-icons');
@@ -1412,7 +1509,7 @@ function switchWallpaper(name) {
     applyTheme();
 }
 
-function playMusic(fileName) {
+function playMusicLegacy(fileName) {
     const existing = document.getElementById('win-mplayer');
     if (existing) {
         const audio = existing.querySelector('audio');
@@ -1426,7 +1523,7 @@ function playMusic(fileName) {
     createWindow('Windows Media Player', '▶️', createMediaPlayerContent(fileName), 'win-mplayer', { width: '400px', height: '300px', left: '300px', top: '200px' });
 }
 
-function createMediaPlayerContent(fileName) {
+function createMediaPlayerLegacyContent(fileName) {
     return `
         <div class="media-player">
             <div class="player-viz" id="player-viz">
@@ -1441,6 +1538,27 @@ function createMediaPlayerContent(fileName) {
         </div>
     `;
 }
+
+const mediaState={tracks:[],index:-1,shuffle:false,repeat:false,objectUrls:[]};
+function playMusic(fileName){openApp('media-player');requestAnimationFrame(()=>{const existing=mediaState.tracks.findIndex(t=>t.name===fileName);if(existing<0)mediaState.tracks.push({name:fileName,url:`assets/music/${fileName}`,source:'My Music'});renderMediaPlaylist();playMediaTrack(existing<0?mediaState.tracks.length-1:existing)})}
+function createMediaPlayerContent(){return `<div class="media-player xp-wmp">
+    <div class="wmp-top"><b>Windows Media Player</b><span>Now Playing</span><span>Media Library</span><button onclick="document.getElementById('music-folder-input').click()">📁 Add Music Folder</button><input id="music-folder-input" type="file" accept="audio/*" webkitdirectory directory multiple hidden onchange="loadMusicFolder(this.files)"></div>
+    <div class="wmp-body"><div class="wmp-now"><div class="player-viz" id="player-viz">${Array(26).fill('<div class="viz-bar" style="height:10px"></div>').join('')}</div><div class="wmp-track-title" id="wmp-track-title">Select a music folder or choose a song</div></div>
+    <div class="wmp-library"><div class="wmp-library-head">Playlist <span id="wmp-count">0 items</span></div><div id="wmp-playlist" class="wmp-playlist"><div class="wmp-empty">Click “Add Music Folder” to load MP3, WAV, OGG, M4A, AAC or FLAC files from your computer.</div></div></div></div>
+    <div class="wmp-seek"><span id="wmp-current">0:00</span><input id="wmp-progress" type="range" min="0" max="100" value="0" oninput="seekMedia(this.value)"><span id="wmp-duration">0:00</span></div>
+    <div class="player-controls"><audio id="mplayer-audio"></audio><button class="player-btn" onclick="previousMedia()" title="Previous">⏮</button><button class="player-btn main" id="wmp-play" onclick="toggleMedia()" title="Play or pause">▶</button><button class="player-btn" onclick="nextMedia()" title="Next">⏭</button><button class="wmp-mode" id="wmp-shuffle" onclick="toggleMediaMode('shuffle')">Shuffle</button><button class="wmp-mode" id="wmp-repeat" onclick="toggleMediaMode('repeat')">Repeat</button><div class="player-info" id="wmp-info">Ready</div><span>🔊</span><input class="wmp-volume" type="range" min="0" max="1" step="0.01" value="0.8" oninput="setMediaVolume(this.value)"></div></div>`}
+function initMediaPlayer(){const audio=document.getElementById('mplayer-audio');if(!audio)return;audio.volume=.8;audio.addEventListener('timeupdate',updateMediaProgress);audio.addEventListener('loadedmetadata',updateMediaProgress);audio.addEventListener('play',()=>{const b=document.getElementById('wmp-play');if(b)b.textContent='⏸'});audio.addEventListener('pause',()=>{const b=document.getElementById('wmp-play');if(b)b.textContent='▶'});audio.addEventListener('ended',()=>mediaState.repeat?playMediaTrack(mediaState.index):nextMedia());renderMediaPlaylist()}
+function loadMusicFolder(files){const supported=/\.(mp3|wav|ogg|m4a|aac|flac|opus)$/i;mediaState.objectUrls.forEach(URL.revokeObjectURL);mediaState.objectUrls=[];mediaState.tracks=Array.from(files).filter(f=>f.type.startsWith('audio/')||supported.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name)).map(file=>{const url=URL.createObjectURL(file);mediaState.objectUrls.push(url);return{name:file.name,url,source:file.webkitRelativePath?.split('/')[0]||'Selected folder'}});mediaState.index=-1;renderMediaPlaylist();if(mediaState.tracks.length)playMediaTrack(0);else showBubble('Windows Media Player','No supported audio files were found in that folder.')}
+function renderMediaPlaylist(){const list=document.getElementById('wmp-playlist'),count=document.getElementById('wmp-count');if(count)count.textContent=`${mediaState.tracks.length} item${mediaState.tracks.length===1?'':'s'}`;if(!list)return;list.innerHTML=mediaState.tracks.length?mediaState.tracks.map((t,i)=>`<button class="wmp-track ${i===mediaState.index?'active':''}" onclick="playMediaTrack(${i})"><span>${i===mediaState.index?'▶':'♫'}</span><span><b>${escapeHtml(t.name)}</b><small>${escapeHtml(t.source)}</small></span></button>`).join(''):'<div class="wmp-empty">Click “Add Music Folder” to load music from your computer.</div>'}
+function playMediaTrack(index){const audio=document.getElementById('mplayer-audio');if(!audio||!mediaState.tracks[index])return;mediaState.index=index;audio.src=mediaState.tracks[index].url;audio.play().catch(()=>{});const title=document.getElementById('wmp-track-title'),info=document.getElementById('wmp-info');if(title)title.textContent=mediaState.tracks[index].name;if(info)info.textContent=mediaState.tracks[index].name;renderMediaPlaylist()}
+function toggleMedia(){const audio=document.getElementById('mplayer-audio');if(!audio)return;if(!audio.src&&mediaState.tracks.length)playMediaTrack(0);else audio.paused?audio.play():audio.pause()}
+function nextMedia(){if(!mediaState.tracks.length)return;const next=mediaState.shuffle?Math.floor(Math.random()*mediaState.tracks.length):(mediaState.index+1)%mediaState.tracks.length;playMediaTrack(next)}
+function previousMedia(){if(!mediaState.tracks.length)return;playMediaTrack((mediaState.index-1+mediaState.tracks.length)%mediaState.tracks.length)}
+function toggleMediaMode(mode){mediaState[mode]=!mediaState[mode];document.getElementById(`wmp-${mode}`)?.classList.toggle('active',mediaState[mode])}
+function seekMedia(value){const audio=document.getElementById('mplayer-audio');if(audio&&Number.isFinite(audio.duration))audio.currentTime=audio.duration*(value/100)}
+function setMediaVolume(value){const audio=document.getElementById('mplayer-audio');if(audio)audio.volume=Number(value)}
+function formatMediaTime(value){if(!Number.isFinite(value))return'0:00';return`${Math.floor(value/60)}:${String(Math.floor(value%60)).padStart(2,'0')}`}
+function updateMediaProgress(){const audio=document.getElementById('mplayer-audio'),range=document.getElementById('wmp-progress');if(!audio)return;if(range)range.value=audio.duration?audio.currentTime/audio.duration*100:0;const current=document.getElementById('wmp-current'),duration=document.getElementById('wmp-duration');if(current)current.textContent=formatMediaTime(audio.currentTime);if(duration)duration.textContent=formatMediaTime(audio.duration)}
 
 // Start viz animation loop
 setInterval(() => {
