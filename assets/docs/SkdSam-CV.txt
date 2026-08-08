@@ -1,0 +1,35 @@
+SKDSAM
+Creative Developer | Blender Add-on Developer | Digital Product Designer
+
+PROFILE
+Independent developer and digital creator building practical tools, interactive
+web experiences, Blender add-ons, creative applications and audio software.
+
+PORTFOLIO
+Website:   https://design-demo.co.uk
+Superhive: https://superhivemarket.com/creators/skdsam
+GitHub:    https://github.com/skdsam
+
+SELECTED PROJECTS
+ColorStacker — https://colorstacker.com
+Web-based colour workflow and creative utility.
+
+Design Demo — https://design-demo.co.uk
+Portfolio and distribution site for applications, experiments and Blender tools.
+
+Serpens — https://design-demo.co.uk/serpens.html
+Drag-and-drop Blender development workflow and add-on repository integration.
+
+Blender Add-ons
+Creator of workflow, animation, node, scene and productivity tools including
+Rescene, Node Mapper, Node Template Manager, Docker, Chromalight, Stack Motion,
+Isometric Room Generator, Key Capture, Collection Compactor, GIF Maker,
+Maze Maker, Text Editor Theme and Todo.
+
+VST & AUDIO
+Development and design of VST instruments, effects and creative audio tools.
+
+CORE SKILLS
+Blender and Python add-on development; JavaScript, HTML and CSS; UI/UX and
+product design; creative tooling; procedural workflows; audio/VST development;
+rapid prototyping; product publishing and documentation.

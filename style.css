@@ -4,6 +4,27 @@
     --xp-taskbar-bg: linear-gradient(to bottom, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #333 100%);
     --xp-start-green: linear-gradient(to bottom, #388e3c 0%, #4caf50 10%, #388e3c 100%);
     --xp-window-header: linear-gradient(to bottom, #0058e4 0%, #3d95ff 10%, #0058e4 50%, #00309c 100%);
+    --desktop-tint: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-classic {
+    --xp-taskbar-bg: linear-gradient(to bottom, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #333 100%);
+    --xp-window-header: linear-gradient(to bottom, #0058e4 0%, #3d95ff 10%, #0058e4 50%, #00309c 100%);
+    --xp-start-green: linear-gradient(to bottom, #388e3c 0%, #4caf50 10%, #388e3c 100%);
+}
+
+body.theme-royale {
+    --xp-taskbar-bg: linear-gradient(to bottom, #4a3ea3 0%, #715ee0 12%, #5648c5 100%);
+    --xp-window-header: linear-gradient(to bottom, #2f2671 0%, #5d58c9 12%, #40379f 100%);
+    --xp-start-green: linear-gradient(to bottom, #3d7d43 0%, #4cae59 12%, #2d6b35 100%);
+    --desktop-tint: rgba(74, 62, 163, 0.12);
+}
+
+body.theme-graphite {
+    --xp-taskbar-bg: linear-gradient(to bottom, #4d4d4d 0%, #6b6b6b 12%, #4d4d4d 100%);
+    --xp-window-header: linear-gradient(to bottom, #2d2d2d 0%, #5f5f5f 10%, #3e3e3e 100%);
+    --xp-start-green: linear-gradient(to bottom, #4d6b4a 0%, #64845f 12%, #3b4d3b 100%);
+    --desktop-tint: rgba(38, 38, 38, 0.12);
 }
 
 * {
@@ -38,6 +59,15 @@ textarea, input[type="text"] {
     background: #008080 url('assets/bliss.jpg') center/cover no-repeat;
     position: relative;
     overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+
+#desktop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--desktop-tint);
+    pointer-events: none;
 }
 
 .desktop-icons {
@@ -65,6 +95,9 @@ textarea, input[type="text"] {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
+.icon.selected { background: rgba(49,106,197,.72); border: 1px dotted #fff; }
+.icon.selected span { background:#316ac5; text-shadow:none; }
+#selection-box { display:none; position:absolute; z-index:90; border:1px dotted #fff; background:rgba(49,106,197,.28); pointer-events:none; }
 
 .icon img {
     width: 32px;
@@ -94,6 +127,9 @@ textarea, input[type="text"] {
     font-size: 11px;
     cursor: pointer;
     box-shadow: inset 1px 1px 1px rgba(255,255,255,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .taskbar-tab:hover {
@@ -154,6 +190,7 @@ textarea, input[type="text"] {
     cursor: pointer;
     box-shadow: inset 0 2px 5px rgba(255,255,255,0.4);
     font-style: italic;
+    border-right: 1px solid rgba(0,0,0,0.35);
 }
 
 #start-button:hover {
@@ -264,6 +301,10 @@ textarea, input[type="text"] {
     min-width: 200px;
     min-height: 150px;
 }
+.cv-file-icon{width:32px;height:38px;margin-bottom:4px;background:#fff;border:1px solid #aaa;box-shadow:2px 2px 2px #0005;position:relative;display:flex;align-items:center;justify-content:center}.cv-file-icon:after{content:'';position:absolute;right:-1px;top:-1px;border-left:9px solid #ddd;border-top:9px solid transparent}.cv-file-icon span{background:#174ba0;color:#fff!important;text-shadow:none!important;font:bold 17px Georgia;padding:1px 4px}
+.cv-document{height:100%;display:flex;flex-direction:column;background:#d4d0c8;font:12px Arial}.cv-toolbar{padding:5px 8px;border-bottom:1px solid #999;background:#ece9d8}.cv-toolbar button{padding:3px 12px}.cv-page-wrap{flex:1;overflow:auto;padding:24px;background:#7f7f7f}.cv-page{max-width:720px;min-height:900px;margin:auto;padding:55px 62px;background:#fff;color:#222;box-shadow:2px 2px 8px #333}.cv-page h1{font-size:30px;color:#174ba0;margin-bottom:3px}.cv-page h2{font-size:15px;color:#174ba0;border-bottom:1px solid #174ba0;margin:22px 0 8px;padding-bottom:3px;text-transform:uppercase}.cv-page h3{font-size:13px;margin:10px 0 3px}.cv-page p,.cv-page li{line-height:1.55}.cv-page ul{padding-left:20px}.cv-page a{color:#0645ad;text-decoration:underline;cursor:pointer!important}.cv-links{display:flex;gap:15px;flex-wrap:wrap;margin:8px 0 16px}.cv-tag{display:inline-block;background:#e9f0fb;border:1px solid #a9bde1;border-radius:2px;padding:3px 7px;margin:2px}
+.xp-window:not(.active) { border-color:#7a96c6; }
+.xp-window:not(.active) .window-header { filter:saturate(.35) brightness(1.15); }
 
 .window-header {
     height: 28px;
@@ -485,6 +526,16 @@ textarea, input[type="text"] {
     height: 32px;
     margin-right: 10px;
 }
+.start-app-glyph { width:32px; margin-right:10px; font-size:25px; text-align:center; }
+.all-programs { position:relative; margin:5px 4px 1px; padding:8px; border-top:1px solid #d6d6d6; display:flex; justify-content:center; gap:12px; font-size:11px; color:#111; }
+.all-programs:hover,.all-programs:focus { background:#316ac5; color:#fff; outline:0; }
+.programs-flyout { display:none; position:fixed; left:184px; bottom:70px; width:205px; padding:3px; background:#fff; color:#111; border:2px solid #245edb; box-shadow:3px 3px 8px #3338; }
+.all-programs:hover .programs-flyout,.all-programs:focus-within .programs-flyout { display:block; }
+.programs-flyout div { display:flex; align-items:center; gap:8px; padding:6px; }.programs-flyout div:hover { background:#316ac5;color:#fff; }
+.programs-flyout img,.programs-flyout span { width:22px;height:22px;object-fit:contain;font-size:19px; }
+.welcome-toast { position:fixed;right:12px;bottom:42px;z-index:3500;width:255px;padding:12px 24px 12px 14px;display:flex;flex-direction:column;gap:4px;background:#ffffe1;border:1px solid #333;border-radius:5px;box-shadow:2px 2px 8px #0005;font:11px Tahoma;animation:welcome-in .3s ease-out; }
+.welcome-toast b{color:#003399}.welcome-toast button{position:absolute;right:5px;top:4px;border:0;background:transparent;font-weight:bold}.welcome-toast span{color:#444}@keyframes welcome-in{from{transform:translateY(15px);opacity:0}}
+.paint-shell{height:100%;display:flex;flex-direction:column;background:#ece9d8}.paint-menu{padding:3px 7px;border-bottom:1px solid #aca899;font:11px Tahoma;word-spacing:13px}.paint-toolbar{display:flex;align-items:center;gap:7px;padding:5px;border-bottom:1px solid #aca899;font:11px Tahoma}.paint-tool{min-width:28px;height:25px;border:1px outset #fff;background:#ece9d8}.paint-tool.active{border-style:inset;background:#d4d0c8}.paint-canvas-wrap{flex:1;overflow:auto;padding:8px;background:#808080}.paint-canvas-wrap canvas{display:block;background:#fff;box-shadow:1px 1px 2px #333;cursor:crosshair!important;touch-action:none}.paint-palette{display:flex;gap:3px;padding:5px;border-top:1px solid #fff}.paint-swatch{width:20px;height:20px;border:1px outset #fff}.paint-swatch.active{outline:2px solid #111;outline-offset:1px}
 
 .start-item-right {
     padding: 5px 10px;
@@ -708,6 +759,9 @@ textarea, input[type="text"] {
     border: 2px inset #fff;
     overflow: auto;
 }
+.ie-frame-live{width:100%;height:100%;border:0;background:#fff}.ie-status{height:22px;display:flex;align-items:center;justify-content:space-between;padding:2px 7px;border-top:1px solid #aca899;background:#ece9d8;font:11px Tahoma;color:#333}.ie-external{padding:1px 7px;font-size:11px}.ie-embed-note{background:#ffffe1;border-bottom:1px solid #d6c96d;padding:4px 8px;font:11px Tahoma}
+.cmd-shell{height:100%;background:#000;color:#c0c0c0;padding:7px;overflow:auto;font:14px 'Lucida Console','Courier New',monospace;user-select:text}.cmd-output{white-space:pre-wrap;user-select:text}.cmd-line{display:flex;align-items:center}.cmd-input{flex:1;background:#000!important;color:#c0c0c0;border:0!important;outline:0;font:inherit;padding:0!important}
+.wordpad-shell{height:100%;display:flex;flex-direction:column;background:#ece9d8}.wordpad-menu{padding:3px 7px;border-bottom:1px solid #aca899;font:11px Tahoma;word-spacing:12px}.wordpad-tools{display:flex;gap:4px;align-items:center;padding:4px;border-bottom:1px solid #aca899}.wordpad-tools button,.wordpad-tools select{height:24px;min-width:28px}.wordpad-page-wrap{flex:1;overflow:auto;padding:20px;background:#808080}.wordpad-page{width:min(680px,100%);min-height:700px;margin:auto;background:#fff;padding:45px;box-shadow:2px 2px 5px #333;outline:0;font:14px Arial;user-select:text}.wordpad-page *{user-select:text}
 
 .ie-mock-page {
     padding: 40px;

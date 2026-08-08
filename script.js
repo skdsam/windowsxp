@@ -8,8 +8,34 @@ const config = {
     iconPositions: JSON.parse(localStorage.getItem('xp_icon_positions')) || {},
     recycleBin: 恢复RecycleBinState(),
     autoArrange: JSON.parse(localStorage.getItem('xp_auto_arrange')) || false,
-    alignToGrid: JSON.parse(localStorage.getItem('xp_align_to_grid')) || true
+    alignToGrid: JSON.parse(localStorage.getItem('xp_align_to_grid')) || true,
+    theme: localStorage.getItem('xp_theme') || 'classic',
+    wallpaper: localStorage.getItem('xp_wallpaper') || 'bliss'
 };
+
+function applyTheme() {
+    const root = document.body;
+    root.classList.remove('theme-classic', 'theme-royale', 'theme-graphite');
+    root.classList.add(`theme-${config.theme}`);
+
+    const wallpaperMap = {
+        bliss: 'url("assets/bliss.jpg")',
+        blue: 'linear-gradient(135deg, #0c5ca4 0%, #1f77d1 35%, #73b7ff 100%)',
+        dusk: 'linear-gradient(135deg, #231f42 0%, #3a3f7d 35%, #5d6ba8 100%)'
+    };
+
+    const desktop = document.getElementById('desktop');
+    if (desktop) {
+        desktop.style.background = wallpaperMap[config.wallpaper] || wallpaperMap.bliss;
+        desktop.style.backgroundSize = 'cover';
+        desktop.style.backgroundPosition = 'center';
+    }
+
+    const appTabs = document.querySelectorAll('.taskbar-tab');
+    appTabs.forEach(tab => tab.style.opacity = '1');
+    localStorage.setItem('xp_theme', config.theme);
+    localStorage.setItem('xp_wallpaper', config.wallpaper);
+}
 
 function 恢复RecycleBinState() {
     const saved = localStorage.getItem('xp_recycle_bin');
@@ -26,11 +52,15 @@ function saveRecycleBin() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initSystemFiles();
+    applyTheme();
     initClock();
     initStartMenu();
     initContextMenu();
     initDesktopIcons();
+    initDesktopExperience();
     playSound('startup');
+    if (sessionStorage.getItem('xp_welcomed')) document.getElementById('welcome-toast')?.remove();
+    else sessionStorage.setItem('xp_welcomed', '1');
 });
 
 function initSystemFiles() {
@@ -528,122 +558,151 @@ function findNextAvailableSpot() {
 
 // Window Management
 function openApp(appId) {
-    if (appId === 'notepad') {
-        const existing = document.getElementById('win-notepad');
-        if (existing) {
-            focusWindow('win-notepad');
-            return;
-        }
-        createWindow('Untitled', '<img src="assets/Notepad_WinXP.webp" style="width:16px;height:16px;vertical-align:middle;">', createNotepadContent(), 'win-notepad', config.notepad);
-    } else if (appId === 'my-computer') {
-        const existing = document.getElementById('win-computer');
-        if (existing) {
-            focusWindow('win-computer');
-            return;
-        }
-        createWindow('My Computer', '<img src="assets/mycomputer.webp" style="width:16px;height:16px;vertical-align:middle;">', wrapInExplorer('My Computer', createFolderContent(['Local Disk (C:)', 'Shared Documents', 'User\'s Documents'], 'disk', 'win-computer'), 'My Computer'), 'win-computer', { width: '700px', height: '500px', left: '150px', top: '150px' });
-    } else if (appId === 'recycle-bin') {
-        const existing = document.getElementById('win-recycle');
-        if (existing) {
-            focusWindow('win-recycle');
-            return;
-        }
-        createWindow('Recycle Bin', '🗑️', wrapInExplorer('Recycle Bin', createFolderContent(config.recycleBin, 'file', 'win-recycle'), 'Recycle Bin'), 'win-recycle', { width: '700px', height: '500px', left: '250px', top: '250px' });
-    } else if (appId === 'my-documents') {
-        const existing = document.getElementById('win-docs');
-        if (existing) {
-            focusWindow('win-docs');
-            return;
-        }
-        createWindow('My Documents', '📂', wrapInExplorer('My Documents', createFolderContent(['Resume.txt', 'Ideas.txt'], 'file', 'win-docs'), 'C:\\Documents and Settings\\User\\My Documents'), 'win-docs', { width: '700px', height: '500px', left: '120px', top: '120px' });
-    } else if (appId === 'my-music') {
-        const existing = document.getElementById('win-music');
-        if (existing) {
-            focusWindow('win-music');
-            return;
-        }
-        createWindow('My Music', '🎵', wrapInExplorer('My Music', createFolderContent(['SoundHelix-Song-1.mp3', 'SoundHelix-Song-2.mp3'], 'music', 'win-music'), 'C:\\Documents and Settings\\User\\My Documents\\My Music'), 'win-music', { width: '700px', height: '500px', left: '180px', top: '180px' });
-    } else if (appId === 'my-pictures') {
-        const existing = document.getElementById('win-pics');
-        if (existing) {
-            focusWindow('win-pics');
-            return;
-        }
-        createWindow('My Pictures', '🌅', wrapInExplorer('My Pictures', createFolderContent(['Lighthouse.jpg', 'Waterfall.jpg', 'Field.jpg'], 'image', 'win-pics'), 'C:\\Documents and Settings\\User\\My Documents\\My Pictures'), 'win-pics', { width: '700px', height: '500px', left: '200px', top: '200px' });
-    } else if (appId === 'control-panel') {
-        const existing = document.getElementById('win-settings');
-        if (existing) {
-            focusWindow('win-settings');
-            return;
-        }
-        createWindow('Control Panel', '⚙️', wrapInExplorer('Control Panel', createFolderContent(['Display', 'User Accounts', 'Network Connections', 'Sounds & Audio'], 'settings', 'win-settings'), 'Control Panel'), 'win-settings', { width: '700px', height: '500px', left: '150px', top: '150px' });
-    } else if (appId === 'run') {
-        const existing = document.getElementById('win-run');
-        if (existing) {
-            focusWindow('win-run');
-            return;
-        }
-        createWindow('Run', '🏃', `
-            <div style="padding: 15px; font-family: Tahoma; font-size: 11px;">
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <div style="font-size: 32px;">🏃</div>
-                    <div>
-                        Type the name of a program, folder, document, or Internet resource, and Windows will open it for you.
+    const appMap = {
+        notepad: () => {
+            const existing = document.getElementById('win-notepad');
+            if (existing) { focusWindow('win-notepad'); return; }
+            createWindow('Untitled', '<img src="assets/Notepad_WinXP.webp" style="width:16px;height:16px;vertical-align:middle;">', createNotepadContent(), 'win-notepad', config.notepad);
+        },
+        wordpad: () => {
+            const existing = document.getElementById('win-wordpad');
+            if (existing) { focusWindow('win-wordpad'); return; }
+            createWindow('Document - WordPad', '📝', createWordPadContent(), 'win-wordpad', { width:'720px', height:'540px', left:'125px', top:'65px' });
+        },
+        cmd: () => {
+            const existing = document.getElementById('win-cmd');
+            if (existing) { focusWindow('win-cmd'); return; }
+            createWindow('C:\\WINDOWS\\system32\\cmd.exe', '▣', createCommandPromptContent(), 'win-cmd', { width:'650px', height:'410px', left:'140px', top:'100px' });
+            requestAnimationFrame(() => document.getElementById('cmd-input')?.focus());
+        },
+        'my-computer': () => {
+            const existing = document.getElementById('win-computer');
+            if (existing) { focusWindow('win-computer'); return; }
+            createWindow('My Computer', '<img src="assets/mycomputer.webp" style="width:16px;height:16px;vertical-align:middle;">', wrapInExplorer('My Computer', createFolderContent(['Local Disk (C:)', 'Shared Documents', 'User\'s Documents'], 'disk', 'win-computer'), 'My Computer'), 'win-computer', { width: '700px', height: '500px', left: '150px', top: '150px' });
+        },
+        'recycle-bin': () => {
+            const existing = document.getElementById('win-recycle');
+            if (existing) { focusWindow('win-recycle'); return; }
+            createWindow('Recycle Bin', '🗑️', wrapInExplorer('Recycle Bin', createFolderContent(config.recycleBin, 'file', 'win-recycle'), 'Recycle Bin'), 'win-recycle', { width: '700px', height: '500px', left: '250px', top: '250px' });
+        },
+        'my-documents': () => {
+            const existing = document.getElementById('win-docs');
+            if (existing) { focusWindow('win-docs'); return; }
+            createWindow('My Documents', '📂', wrapInExplorer('My Documents', createFolderContent(['SkdSam-CV.txt', 'Resume.txt', 'Ideas.txt'], 'file', 'win-docs'), 'C:\\Documents and Settings\\User\\My Documents'), 'win-docs', { width: '700px', height: '500px', left: '120px', top: '120px' });
+        },
+        'my-music': () => {
+            const existing = document.getElementById('win-music');
+            if (existing) { focusWindow('win-music'); return; }
+            createWindow('My Music', '🎵', wrapInExplorer('My Music', createFolderContent(['SoundHelix-Song-1.mp3', 'SoundHelix-Song-2.mp3'], 'music', 'win-music'), 'C:\\Documents and Settings\\User\\My Documents\\My Music'), 'win-music', { width: '700px', height: '500px', left: '180px', top: '180px' });
+        },
+        'my-pictures': () => {
+            const existing = document.getElementById('win-pics');
+            if (existing) { focusWindow('win-pics'); return; }
+            createWindow('My Pictures', '🌅', wrapInExplorer('My Pictures', createFolderContent(['Lighthouse.jpg', 'Waterfall.jpg', 'Field.jpg'], 'image', 'win-pics'), 'C:\\Documents and Settings\\User\\My Documents\\My Pictures'), 'win-pics', { width: '700px', height: '500px', left: '200px', top: '200px' });
+        },
+        'control-panel': () => {
+            const existing = document.getElementById('win-settings');
+            if (existing) { focusWindow('win-settings'); return; }
+            createWindow('Control Panel', '⚙️', createControlPanelContent(), 'win-settings', { width: '760px', height: '520px', left: '100px', top: '100px' });
+        },
+        'task-manager': () => {
+            const existing = document.getElementById('win-task-manager');
+            if (existing) { focusWindow('win-task-manager'); return; }
+            createWindow('Task Manager', '📊', createTaskManagerContent(), 'win-task-manager', { width: '540px', height: '420px', left: '200px', top: '140px' });
+        },
+        run: () => {
+            const existing = document.getElementById('win-run');
+            if (existing) { focusWindow('win-run'); return; }
+            createWindow('Run', '🏃', `
+                <div style="padding: 15px; font-family: Tahoma; font-size: 11px;">
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div style="font-size: 32px;">🏃</div>
+                        <div>
+                            Type the name of a program, folder, document, or Internet resource, and Windows will open it for you.
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span>Open:</span>
+                        <input type="text" id="run-input" style="flex: 1; height: 22px; border: 1px solid #7f9db9; padding: 0 5px;">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 5px; margin-top: 20px;">
+                        <button onclick="handleRun()" style="width: 75px; height: 23px;">OK</button>
+                        <button onclick="closeWindow('win-run')" style="width: 75px; height: 23px;">Cancel</button>
+                        <button style="width: 75px; height: 23px;">Browse...</button>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span>Open:</span>
-                    <input type="text" id="run-input" style="flex: 1; height: 22px; border: 1px solid #7f9db9; padding: 0 5px;">
+            `, 'win-run', { width: '400px', height: '180px', left: '50px', top: 'calc(100vh - 250px)' });
+            setTimeout(() => {
+                const input = document.getElementById('run-input');
+                if (input) {
+                    input.focus();
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') handleRun();
+                    });
+                }
+            }, 100);
+        },
+        search: () => {
+            const existing = document.getElementById('win-search');
+            if (existing) { focusWindow('win-search'); return; }
+            createWindow('Search Results', '🔍', `
+                <div style="display: flex; height: 100%; font-family: Tahoma; font-size: 11px;">
+                    <div style="width: 220px; background: #d3e5fa; border-right: 1px solid #91b0df; padding: 15px;">
+                        <b style="display: block; margin-bottom: 10px;">Search by any or all of the criteria below.</b>
+                        <div style="margin-bottom: 10px;">
+                            All or part of the file name:<br>
+                            <input id="search-file" type="text" style="width: 100%; border: 1px solid #7f9db9;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            A word or phrase in the file:<br>
+                            <input id="search-text" type="text" style="width: 100%; border: 1px solid #7f9db9;">
+                        </div>
+                        <button onclick="doSearch()" style="width: 100%; height: 23px;">Search</button>
+                    </div>
+                    <div id="search-results" style="flex: 1; background: #fff; padding: 20px; color: #666; overflow: auto;">
+                        Please enter your search criteria and click Search.
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: flex-end; gap: 5px; margin-top: 20px;">
-                    <button onclick="handleRun()" style="width: 75px; height: 23px;">OK</button>
-                    <button onclick="closeWindow('win-run')" style="width: 75px; height: 23px;">Cancel</button>
-                    <button style="width: 75px; height: 23px;">Browse...</button>
-                </div>
-            </div>
-        `, 'win-run', { width: '400px', height: '180px', left: '50px', top: 'calc(100vh - 250px)' });
-        
-        // Handle Enter key in Run input
-        setTimeout(() => {
-            const input = document.getElementById('run-input');
-            if (input) {
-                input.focus();
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') handleRun();
-                });
-            }
-        }, 100);
-    } else if (appId === 'search') {
-        const existing = document.getElementById('win-search');
-        if (existing) {
-            focusWindow('win-search');
-            return;
+            `, 'win-search', { width: '600px', height: '400px', left: '100px', top: '100px' });
+        },
+        help: () => { /* existing help omitted for brevity */ },
+        ie: () => {
+            const existing = document.getElementById('win-ie');
+            if (existing) { focusWindow('win-ie'); return; }
+            createWindow('msn.com - Microsoft Internet Explorer', '<img src="assets/internetexplorer.png" style="width:16px;height:16px;vertical-align:middle;">', createIEContent(), 'win-ie', { width: '800px', height: '600px', left: '50px', top: '50px' });
+            requestAnimationFrame(() => navigateIE('go'));
+        },
+        calc: () => {
+            const existing = document.getElementById('win-calc');
+            if (existing) { focusWindow('win-calc'); return; }
+            createWindow('Calculator', '🧮', createCalcContent(), 'win-calc', { width: '250px', height: '320px', left: '200px', top: '200px' });
+        },
+        minesweeper: () => {
+            const existing = document.getElementById('win-minesweeper');
+            if (existing) { focusWindow('win-minesweeper'); return; }
+            createWindow('Minesweeper', '<img src="assets/minesweep.webp" style="width:16px;height:16px;vertical-align:middle;">', createMinesweeperContent(), 'win-minesweeper', { width: '200px', height: '300px', left: '300px', top: '150px' });
+        },
+        paint: () => {
+            const existing = document.getElementById('win-paint');
+            if (existing) { focusWindow('win-paint'); return; }
+            createWindow('untitled - Paint', '🎨', createPaintContent(), 'win-paint', { width:'720px', height:'520px', left:'90px', top:'55px' });
+            requestAnimationFrame(initPaint);
+        },
+        cv: () => {
+            const existing = document.getElementById('win-cv');
+            if (existing) { focusWindow('win-cv'); return; }
+            createWindow('SkdSam CV', '📄', createCvContent(), 'win-cv', { width:'780px', height:'620px', left:'110px', top:'45px' });
         }
-        createWindow('Search Results', '🔍', `
-            <div style="display: flex; height: 100%; font-family: Tahoma; font-size: 11px;">
-                <div style="width: 200px; background: #d3e5fa; border-right: 1px solid #91b0df; padding: 15px;">
-                    <b style="display: block; margin-bottom: 10px;">Search by any or all of the criteria below.</b>
-                    <div style="margin-bottom: 10px;">
-                        All or part of the file name:<br>
-                        <input type="text" style="width: 100%; border: 1px solid #7f9db9;">
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        A word or phrase in the file:<br>
-                        <input type="text" style="width: 100%; border: 1px solid #7f9db9;">
-                    </div>
-                    <button style="width: 100%; height: 23px;">Search</button>
-                </div>
-                <div style="flex: 1; background: #fff; padding: 20px; color: #666;">
-                    Please enter your search criteria and click Search.
-                </div>
-            </div>
-        `, 'win-search', { width: '600px', height: '400px', left: '100px', top: '100px' });
-    } else if (appId === 'help') {
+    };
+
+    if (appMap[appId]) {
+        appMap[appId]();
+        return;
+    }
+
+    if (appId === 'help') {
         const existing = document.getElementById('win-help');
-        if (existing) {
-            focusWindow('win-help');
-            return;
-        }
+        if (existing) { focusWindow('win-help'); return; }
         createWindow('Help and Support Center', '❓', `
             <div style="font-family: Tahoma; font-size: 11px; height: 100%;">
                 <div style="background: #4a8eff; color: white; padding: 10px; font-weight: bold; font-size: 14px;">
@@ -669,27 +728,6 @@ function openApp(appId) {
                 </div>
             </div>
         `, 'win-help', { width: '700px', height: '500px', left: '50px', top: '50px' });
-    } else if (appId === 'ie') {
-        const existing = document.getElementById('win-ie');
-        if (existing) {
-            focusWindow('win-ie');
-            return;
-        }
-        createWindow('msn.com - Microsoft Internet Explorer', '<img src="assets/internetexplorer.png" style="width:16px;height:16px;vertical-align:middle;">', createIEContent(), 'win-ie', { width: '800px', height: '600px', left: '50px', top: '50px' });
-    } else if (appId === 'calc') {
-        const existing = document.getElementById('win-calc');
-        if (existing) {
-            focusWindow('win-calc');
-            return;
-        }
-        createWindow('Calculator', '🧮', createCalcContent(), 'win-calc', { width: '250px', height: '320px', left: '200px', top: '200px' });
-    } else if (appId === 'minesweeper') {
-        const existing = document.getElementById('win-minesweeper');
-        if (existing) {
-            focusWindow('win-minesweeper');
-            return;
-        }
-        createWindow('Minesweeper', '<img src="assets/minesweep.webp" style="width:16px;height:16px;vertical-align:middle;">', createMinesweeperContent(), 'win-minesweeper', { width: '200px', height: '300px', left: '300px', top: '150px' });
     }
 }
 
@@ -697,10 +735,35 @@ function handleRun() {
     const input = document.getElementById('run-input');
     if (!input) return;
     const cmd = input.value.toLowerCase().trim();
-    if (cmd === 'notepad') openApp('notepad');
-    else if (cmd === 'control') openApp('control-panel');
-    else if (cmd === 'calc') alert('Calculator coming soon!');
-    else if (cmd) alert('Windows cannot find "' + cmd + '".');
+    const commands = {
+        notepad: 'notepad',
+        wordpad: 'wordpad',
+        write: 'wordpad',
+        cmd: 'cmd',
+        command: 'cmd',
+        calc: 'calc',
+        calculator: 'calc',
+        mspaint: 'paint',
+        paint: 'paint',
+        cv: 'cv',
+        resume: 'cv',
+        control: 'control-panel',
+        'control panel': 'control-panel',
+        'task manager': 'task-manager',
+        explorer: 'my-computer',
+        'my computer': 'my-computer',
+        'internet explorer': 'ie',
+        ie: 'ie',
+        iexplore: 'ie',
+        search: 'search',
+        help: 'help'
+    };
+
+    if (cmd && commands[cmd]) {
+        openApp(commands[cmd]);
+    } else if (cmd) {
+        alert('Windows cannot find "' + cmd + '".');
+    }
     closeWindow('win-run');
 }
 
@@ -896,7 +959,12 @@ function createWindow(title, icon, contentHtml, windowId, initialPos) {
         </div>
     `;
 
+    document.querySelectorAll('.xp-window').forEach(w => w.classList.remove('active'));
     container.appendChild(win);
+    win.classList.add('active');
+    win.querySelector('.window-header').addEventListener('dblclick', e => {
+        if (!e.target.closest('.window-controls')) maximizeWindow(windowId);
+    });
     makeDraggable(win, false, (pos) => {
         if (windowId === 'win-notepad') {
             config.notepad.left = pos.left;
@@ -922,7 +990,9 @@ function createWindow(title, icon, contentHtml, windowId, initialPos) {
 function focusWindow(id) {
     const win = document.getElementById(id);
     if (win) {
+        document.querySelectorAll('.xp-window').forEach(w => w.classList.remove('active'));
         win.classList.remove('minimized');
+        win.classList.add('active');
         win.style.zIndex = ++zIndexCounter;
         document.querySelectorAll('.taskbar-tab').forEach(t => t.classList.remove('active'));
         const tab = document.querySelector(`.taskbar-tab[data-window-id="${id}"]`);
@@ -1198,6 +1268,48 @@ function createDesktopFile(baseName, type) {
     if (config.autoArrange) alignIconsNow();
 }
 
+function doSearch() {
+    const fileTerm = document.getElementById('search-file')?.value.trim().toLowerCase() || '';
+    const textTerm = document.getElementById('search-text')?.value.trim().toLowerCase() || '';
+    const resultsPanel = document.getElementById('search-results');
+    if (!resultsPanel) return;
+
+    const localNames = [
+        'Resume.txt', 'Ideas.txt', 'My Computer', 'My Documents', 'My Music', 'My Pictures',
+        'Control Panel', 'Internet Explorer', 'Notepad', 'Calculator', 'Task Manager'
+    ];
+
+    const matches = localNames.filter(name => {
+        const haystack = name.toLowerCase();
+        return (!fileTerm || haystack.includes(fileTerm)) && (!textTerm || haystack.includes(textTerm));
+    });
+
+    if (!matches.length) {
+        resultsPanel.innerHTML = '<div style="color: #666;">No results found.</div>';
+        return;
+    }
+
+    resultsPanel.innerHTML = matches.map(item => `
+        <div style="padding: 6px 0; border-bottom: 1px solid #eee; cursor: pointer; color: #003399;" onclick="openSearchItem('${item}')">${item}</div>
+    `).join('');
+}
+
+function openSearchItem(item) {
+    const map = {
+        'Notepad': 'notepad',
+        'Calculator': 'calc',
+        'Control Panel': 'control-panel',
+        'Task Manager': 'task-manager',
+        'My Computer': 'my-computer',
+        'My Documents': 'my-documents',
+        'My Music': 'my-music',
+        'My Pictures': 'my-pictures',
+        'Internet Explorer': 'ie'
+    };
+    if (map[item]) openApp(map[item]);
+    else if (item.endsWith('.txt')) openTextFile(item, true);
+}
+
 function createDesktopFolder() {
     const container = document.querySelector('.desktop-icons');
     const id = `icon-folder-${Date.now()}`;
@@ -1214,6 +1326,90 @@ function createDesktopFolder() {
     localStorage.setItem('xp_icon_positions', JSON.stringify(config.iconPositions));
     
     if (config.autoArrange) alignIconsNow();
+}
+
+function createTaskManagerContent() {
+    const appCount = document.querySelectorAll('.taskbar-tab').length;
+    return `
+        <div style="display: flex; flex-direction: column; height: 100%; background: #ece9d8; font-family: Tahoma; font-size: 11px; padding: 12px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                <div style="background: #fff; border: 1px solid #aca899; padding: 10px; text-align: center;">
+                    <div style="color: #666;">CPU</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #003399;">24%</div>
+                </div>
+                <div style="background: #fff; border: 1px solid #aca899; padding: 10px; text-align: center;">
+                    <div style="color: #666;">Memory</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #003399;">41%</div>
+                </div>
+                <div style="background: #fff; border: 1px solid #aca899; padding: 10px; text-align: center;">
+                    <div style="color: #666;">Processes</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #003399;">${appCount}</div>
+                </div>
+            </div>
+            <div style="background: #fff; border: 1px solid #aca899; flex: 1; padding: 8px; overflow: auto;">
+                <div style="display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px solid #ccc; font-weight: bold;">
+                    <span>Image Name</span>
+                    <span>CPU</span>
+                </div>
+                ${Array.from(document.querySelectorAll('.taskbar-tab')).map(tab => {
+                    const title = tab.textContent.trim();
+                    return `<div style="display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px solid #eee;"><span>${title}</span><span>4%</span></div>`;
+                }).join('') || '<div style="padding: 10px; color: #666;">No active apps.</div>'}
+            </div>
+        </div>
+    `;
+}
+
+function createControlPanelContent() {
+    return `
+        <div style="padding: 18px; font-family: Tahoma; font-size: 11px; background: #edf4ff; height: 100%; overflow: auto;">
+            <h3 style="margin-bottom: 15px; color: #003399;">Classic Control Panel</h3>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 14px;">
+                <div class="panel-card" style="background: white; border: 1px solid #aca899; padding: 12px;">
+                    <strong>Appearance</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="theme" value="classic" checked onchange="switchTheme('classic')"> Classic Blue</label><br>
+                        <label><input type="radio" name="theme" value="royale" onchange="switchTheme('royale')"> Royale</label><br>
+                        <label><input type="radio" name="theme" value="graphite" onchange="switchTheme('graphite')"> Graphite</label>
+                    </div>
+                </div>
+                <div class="panel-card" style="background: white; border: 1px solid #aca899; padding: 12px;">
+                    <strong>Desktop</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="wallpaper" value="bliss" checked onchange="switchWallpaper('bliss')"> Bliss</label><br>
+                        <label><input type="radio" name="wallpaper" value="blue" onchange="switchWallpaper('blue')"> Blue</label><br>
+                        <label><input type="radio" name="wallpaper" value="dusk" onchange="switchWallpaper('dusk')"> Dusk</label>
+                    </div>
+                </div>
+                <div class="panel-card" style="background: white; border: 1px solid #aca899; padding: 12px;">
+                    <strong>System Settings</strong>
+                    <div style="margin-top: 8px;">
+                        <label><input type="checkbox" checked> Enable startup sound</label><br>
+                        <label><input type="checkbox" checked> Show hidden files</label><br>
+                        <label><input type="checkbox" checked> Auto arrange icons</label>
+                    </div>
+                </div>
+                <div class="panel-card" style="background: white; border: 1px solid #aca899; padding: 12px;">
+                    <strong>Quick Actions</strong>
+                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <button onclick="openApp('task-manager')">Open Task Manager</button>
+                        <button onclick="openApp('notepad')">Open Notepad</button>
+                        <button onclick="showShutdownDialog('shutdown')">Turn off computer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function switchTheme(name) {
+    config.theme = name;
+    applyTheme();
+}
+
+function switchWallpaper(name) {
+    config.wallpaper = name;
+    applyTheme();
 }
 
 function playMusic(fileName) {
@@ -1314,7 +1510,7 @@ async function openTextFile(fileName, isAssetList = false) {
     loadContent();
 }
 
-function createIEContent() {
+function createIELegacyContent() {
     return `
         <div class="ie-container">
             <div class="ie-toolbar">
@@ -1342,7 +1538,7 @@ function createIEContent() {
     `;
 }
 
-function navigateIE(action) {
+function navigateIELegacy(action) {
     const addressInput = document.getElementById('ie-address');
     const frame = document.getElementById('ie-frame');
     if (!addressInput || !frame) return;
@@ -1369,6 +1565,45 @@ function navigateIE(action) {
         }, 500);
     }
 }
+
+function createIEContent() {
+    return `<div class="ie-container">
+        <div class="ie-toolbar">
+            <div class="ie-btn" onclick="navigateIE('back')"><span>◀</span><span>Back</span></div>
+            <div class="ie-btn" onclick="navigateIE('forward')"><span>▶</span><span>Forward</span></div>
+            <div class="ie-btn" onclick="navigateIE('stop')"><span>✕</span><span>Stop</span></div>
+            <div class="ie-btn" onclick="navigateIE('refresh')"><span>↻</span><span>Refresh</span></div>
+            <div class="ie-btn" onclick="navigateIE('home')"><span>⌂</span><span>Home</span></div>
+            <div style="width:1px;height:30px;background:#aca899;margin:0 5px"></div>
+            <div class="ie-btn" onclick="openApp('search')"><span>⌕</span><span>Search</span></div>
+        </div>
+        <div class="ie-address-bar"><span style="font-size:11px">Address</span>
+            <input type="text" id="ie-address" value="https://design-demo.co.uk" onkeypress="if(event.key==='Enter') navigateIE('go')">
+            <div class="ie-btn" onclick="navigateIE('go')" style="flex-direction:row;height:22px;padding:0 10px"><span>➜</span><span>Go</span></div>
+        </div>
+        <div class="ie-embed-note">Some websites prevent iframe display for security. Use “Open in new window” if a page stays blank or reports an error.</div>
+        <div class="ie-content" id="ie-frame">${getMockSite('msn')}</div>
+        <div class="ie-status"><span id="ie-status-text">Done</span><button class="ie-external" onclick="openIEExternal()">Open in new window</button></div>
+    </div>`;
+}
+
+const ieHistory=[];
+let ieHistoryIndex=-1;
+function navigateIE(action) {
+    const live=document.getElementById('ie-live-frame');
+    if(action==='stop'){if(live)live.src='about:blank';setIEStatus('Stopped');return}
+    if(action==='back'){historyIE(-1);return}
+    if(action==='forward'){historyIE(1);return}
+    if(action==='home'){const frame=document.getElementById('ie-frame'),input=document.getElementById('ie-address');if(frame)frame.innerHTML=getMockSite('msn');if(input)input.value='http://www.msn.com';setIEStatus('Done');return}
+    if(action==='refresh'&&live){live.src=live.src;setIEStatus('Refreshing...');return}
+    if(action==='go')loadIEUrl(document.getElementById('ie-address')?.value||'',true);
+}
+function normaliseIEUrl(url){url=url.trim();if(!url)return'';if(!/^[a-z][a-z0-9+.-]*:/i.test(url))url='https://'+url;try{const parsed=new URL(url);return ['http:','https:'].includes(parsed.protocol)?parsed.href:''}catch{return''}}
+function loadIEUrl(raw,record){const url=normaliseIEUrl(raw),frame=document.getElementById('ie-frame'),input=document.getElementById('ie-address');if(!frame||!input)return;if(!url){setIEStatus('Invalid address');return}input.value=url;setIEStatus(`Opening ${url}...`);frame.innerHTML=`<iframe id="ie-live-frame" class="ie-frame-live" src="${escapeHtml(url)}" title="Web page" referrerpolicy="no-referrer" onload="setIEStatus('Done')"></iframe>`;if(record){ieHistory.splice(ieHistoryIndex+1);ieHistory.push(url);ieHistoryIndex=ieHistory.length-1}const title=document.querySelector('#win-ie .window-header span:nth-child(2)');if(title)title.textContent=`${new URL(url).hostname} - Microsoft Internet Explorer`}
+function historyIE(step){const next=ieHistoryIndex+step;if(next<0||next>=ieHistory.length){setIEStatus('No more history');return}ieHistoryIndex=next;loadIEUrl(ieHistory[next],false)}
+function setIEStatus(value){const el=document.getElementById('ie-status-text');if(el)el.textContent=value}
+function openIEExternal(){const url=normaliseIEUrl(document.getElementById('ie-address')?.value||'');if(url)window.open(url,'_blank','noopener')}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 
 function getMockSite(site) {
     if (site === 'google') {
@@ -1545,3 +1780,139 @@ function revealMine(cell, idx) {
         cell.innerHTML = '<span style="color: blue; font-weight: bold; font-family: sans-serif; font-size: 14px;">1</span>';
     }
 }
+
+// Desktop selection and familiar keyboard behavior.
+function initDesktopExperience() {
+    const desktop = document.getElementById('desktop');
+    const box = document.getElementById('selection-box');
+    let origin = null;
+
+    desktop.addEventListener('mousedown', e => {
+        if (e.button !== 0 || e.target !== desktop) return;
+        document.querySelectorAll('.icon.selected').forEach(i => i.classList.remove('selected'));
+        origin = { x:e.clientX, y:e.clientY };
+        Object.assign(box.style, { display:'block', left:`${origin.x}px`, top:`${origin.y}px`, width:'0', height:'0' });
+    });
+    document.addEventListener('mousemove', e => {
+        if (!origin) return;
+        const left=Math.min(origin.x,e.clientX), top=Math.min(origin.y,e.clientY);
+        Object.assign(box.style,{left:`${left}px`,top:`${top}px`,width:`${Math.abs(e.clientX-origin.x)}px`,height:`${Math.abs(e.clientY-origin.y)}px`});
+        const selection=box.getBoundingClientRect();
+        document.querySelectorAll('.icon').forEach(icon => {
+            const r=icon.getBoundingClientRect();
+            icon.classList.toggle('selected', !(r.right<selection.left || r.left>selection.right || r.bottom<selection.top || r.top>selection.bottom));
+        });
+    });
+    document.addEventListener('mouseup', () => { if(origin){ origin=null; box.style.display='none'; } });
+    document.querySelectorAll('.icon').forEach(icon => icon.addEventListener('mousedown', e => {
+        if (!e.ctrlKey) document.querySelectorAll('.icon.selected').forEach(i => i.classList.remove('selected'));
+        icon.classList.add('selected');
+    }));
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { document.getElementById('start-menu')?.classList.add('hidden'); document.getElementById('context-menu').style.display='none'; }
+        if (e.key === 'Delete' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+            document.querySelectorAll('.icon.selected[id^="icon-file-"]').forEach(icon => {
+                const name=icon.id.replace('icon-file-','');
+                if (!config.recycleBin.includes(name)) config.recycleBin.push(name);
+                icon.style.display='none'; icon.classList.remove('selected');
+            });
+            saveRecycleBin();
+        }
+        if (e.ctrlKey && e.key.toLowerCase()==='r' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) { e.preventDefault(); openApp('run'); }
+    });
+}
+
+function createPaintContent() {
+    const colors=['#000000','#808080','#800000','#ff0000','#808000','#ffff00','#008000','#00ff00','#008080','#00ffff','#000080','#0000ff','#800080','#ff00ff','#ffffff'];
+    return `<div class="paint-shell"><div class="paint-menu">File Edit View Image Colors Help</div>
+        <div class="paint-toolbar"><button class="paint-tool active" title="Pencil">✎</button><label>Size <input id="paint-size" type="range" min="1" max="30" value="4"></label><button class="paint-tool" onclick="clearPaint()">Clear</button><button class="paint-tool" onclick="savePaint()">Save PNG</button></div>
+        <div class="paint-canvas-wrap"><canvas id="paint-canvas" width="900" height="560"></canvas></div>
+        <div class="paint-palette">${colors.map((c,i)=>`<button class="paint-swatch ${i===0?'active':''}" style="background:${c}" data-color="${c}" aria-label="${c}"></button>`).join('')}</div></div>`;
+}
+
+function initPaint() {
+    const canvas=document.getElementById('paint-canvas'); if(!canvas) return;
+    const ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.lineCap='round'; ctx.lineJoin='round';
+    let drawing=false, color='#000000';
+    const point=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}};
+    canvas.addEventListener('pointerdown',e=>{drawing=true;const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);canvas.setPointerCapture(e.pointerId)});
+    canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=point(e);ctx.strokeStyle=color;ctx.lineWidth=+document.getElementById('paint-size').value;ctx.lineTo(p.x,p.y);ctx.stroke()});
+    canvas.addEventListener('pointerup',()=>drawing=false); canvas.addEventListener('pointercancel',()=>drawing=false);
+    document.querySelectorAll('.paint-swatch').forEach(s=>s.addEventListener('click',()=>{color=s.dataset.color;document.querySelectorAll('.paint-swatch').forEach(x=>x.classList.remove('active'));s.classList.add('active')}));
+}
+function clearPaint(){const c=document.getElementById('paint-canvas');if(c){const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}}
+function savePaint(){const c=document.getElementById('paint-canvas');if(!c)return;const a=document.createElement('a');a.download='untitled.png';a.href=c.toDataURL('image/png');a.click()}
+
+function createCvContent() {
+    return `<div class="cv-document">
+        <div class="cv-toolbar"><button onclick="window.print()">Print</button> <button onclick="downloadCv()">Download TXT</button></div>
+        <div class="cv-page-wrap"><article class="cv-page">
+            <h1>SkdSam</h1><p><b>Creative Developer · Blender Add-on Developer · Digital Product Designer</b></p>
+            <div class="cv-links">
+                <a href="https://design-demo.co.uk" target="_blank" rel="noopener">Portfolio Website</a>
+                <a href="https://superhivemarket.com/creators/skdsam" target="_blank" rel="noopener">Superhive Store</a>
+                <a href="https://github.com/skdsam" target="_blank" rel="noopener">GitHub</a>
+            </div>
+            <h2>Profile</h2>
+            <p>Independent developer and digital creator building useful tools, interactive web experiences, Blender add-ons, creative applications and audio software. Focused on turning complex workflows into approachable, well-designed products.</p>
+            <h2>Selected Projects</h2>
+            <h3><a href="https://colorstacker.com" target="_blank" rel="noopener">ColorStacker</a></h3>
+            <p>A web-based colour workflow and creative utility.</p>
+            <h3><a href="https://design-demo.co.uk" target="_blank" rel="noopener">Design Demo</a></h3>
+            <p>Portfolio and distribution site for applications, experiments and Blender tools.</p>
+            <h3><a href="https://design-demo.co.uk/serpens.html" target="_blank" rel="noopener">Serpens</a></h3>
+            <p>A drag-and-drop Blender development workflow with add-on repository integration.</p>
+            <h3><a href="https://superhivemarket.com/creators/skdsam" target="_blank" rel="noopener">Blender Add-ons</a></h3>
+            <p>Creator of workflow, animation, node, scene and productivity tools including Rescene, Node Mapper, Node Template Manager, Docker, Chromalight, Stack Motion, Isometric Room Generator, Key Capture, Collection Compactor, GIF Maker, Maze Maker, Text Editor Theme and Todo.</p>
+            <h3>VST &amp; Audio Applications</h3>
+            <p>Development and design of VST instruments, effects and creative audio tools.</p>
+            <h2>Core Skills</h2>
+            <div><span class="cv-tag">Blender</span><span class="cv-tag">Python</span><span class="cv-tag">JavaScript</span><span class="cv-tag">HTML &amp; CSS</span><span class="cv-tag">UI/UX</span><span class="cv-tag">VST &amp; Audio</span><span class="cv-tag">Procedural Tools</span><span class="cv-tag">Product Design</span></div>
+        </article></div></div>`;
+}
+
+function downloadCv() {
+    const link=document.createElement('a');
+    link.href='assets/docs/SkdSam-CV.txt'; link.download='SkdSam-CV.txt'; link.click();
+}
+
+function createCommandPromptContent() {
+    return `<div class="cmd-shell" id="cmd-shell" onclick="document.getElementById('cmd-input')?.focus()">
+        <div class="cmd-output" id="cmd-output">Microsoft Windows XP [Version 5.1.2600]\n(C) Copyright 1985-2001 Microsoft Corp.\n\n</div>
+        <div class="cmd-line" id="cmd-line"><span>C:\\Documents and Settings\\SkdSam&gt;&nbsp;</span><input id="cmd-input" class="cmd-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')runCommand(this.value)"></div>
+    </div>`;
+}
+
+function runCommand(raw) {
+    const input=document.getElementById('cmd-input'),output=document.getElementById('cmd-output'),shell=document.getElementById('cmd-shell');
+    if(!input||!output)return;
+    const command=raw.trim(), parts=command.split(/\s+/), name=(parts.shift()||'').toLowerCase(), arg=parts.join(' ');
+    output.innerHTML+=`C:\\Documents and Settings\\SkdSam&gt;${escapeHtml(command)}\n`;
+    let result='';
+    if(!name)result='';
+    else if(name==='help')result='Supported commands: HELP, DIR, CLS, DATE, TIME, VER, ECHO, WHOAMI, START, NOTEPAD, WORDPAD, MSPAINT, CALC, EXPLORER, EXIT';
+    else if(name==='dir')result=' Volume in drive C has no label.\n Directory of C:\\Documents and Settings\\SkdSam\n\n08/08/2026  12:00    &lt;DIR&gt;          My Documents\n08/08/2026  12:00    &lt;DIR&gt;          My Pictures\n08/08/2026  12:00    &lt;DIR&gt;          Desktop\n               1 File(s)      SkdSam-CV.txt';
+    else if(name==='cls'){output.innerHTML='';input.value='';return}
+    else if(name==='date')result=new Date().toLocaleDateString();
+    else if(name==='time')result=new Date().toLocaleTimeString();
+    else if(name==='ver')result='Microsoft Windows XP [Version 5.1.2600]';
+    else if(name==='whoami')result='SKDSAM-XP\\SkdSam';
+    else if(name==='echo')result=escapeHtml(arg);
+    else if(name==='exit'){closeWindow('win-cmd');return}
+    else if(['notepad','wordpad','write','mspaint','paint','calc','explorer','iexplore'].includes(name)){const apps={notepad:'notepad',wordpad:'wordpad',write:'wordpad',mspaint:'paint',paint:'paint',calc:'calc',explorer:'my-computer',iexplore:'ie'};openApp(apps[name]);result=''}
+    else if(name==='start'&&arg){if(/^https?:\/\//i.test(arg))window.open(arg,'_blank','noopener');else openApp(({cmd:'cmd',notepad:'notepad',wordpad:'wordpad',paint:'paint',calc:'calc',explorer:'my-computer'})[arg.toLowerCase()]||arg.toLowerCase())}
+    else result=`'${escapeHtml(name)}' is not recognized as an internal or external command,\noperable program or batch file.`;
+    output.innerHTML+=result+(result?'\n\n':'');input.value='';shell.scrollTop=shell.scrollHeight;
+}
+
+function createWordPadContent() {
+    return `<div class="wordpad-shell"><div class="wordpad-menu">File Edit View Insert Format Help</div>
+        <div class="wordpad-tools">
+            <button onclick="wordPadFormat('bold')" title="Bold"><b>B</b></button><button onclick="wordPadFormat('italic')" title="Italic"><i>I</i></button><button onclick="wordPadFormat('underline')" title="Underline"><u>U</u></button>
+            <button onclick="wordPadFormat('justifyLeft')">⇤</button><button onclick="wordPadFormat('justifyCenter')">↔</button><button onclick="wordPadFormat('insertUnorderedList')">• List</button>
+            <select onchange="wordPadFormat('fontName',this.value)"><option>Arial</option><option>Times New Roman</option><option>Courier New</option></select>
+            <button onclick="downloadWordPad()">Save TXT</button>
+        </div><div class="wordpad-page-wrap"><div id="wordpad-editor" class="wordpad-page" contenteditable="true"><h1>Welcome to WordPad</h1><p>Start typing your document here.</p></div></div></div>`;
+}
+function wordPadFormat(command,value=null){document.getElementById('wordpad-editor')?.focus();document.execCommand(command,false,value)}
+function downloadWordPad(){const text=document.getElementById('wordpad-editor')?.innerText||'';const url=URL.createObjectURL(new Blob([text],{type:'text/plain'}));const link=document.createElement('a');link.href=url;link.download='Document.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}

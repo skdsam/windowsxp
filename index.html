@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Windows XP</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="assets/xp_logo.png">
+    <link rel="icon" type="image/png" href="assets/windows-xp.png">
 </head>
 
 <body>
@@ -34,6 +34,10 @@
                 title="Contains files and folders that you have deleted.">
                 <img src="assets/trash.png" alt="Recycle Bin">
                 <span>Recycle Bin</span>
+            </div>
+            <div class="icon" id="icon-cv" ondblclick="openApp('cv')" title="SkdSam CV and portfolio">
+                <div class="cv-file-icon"><span>W</span></div>
+                <span>SkdSam CV</span>
             </div>
         </div>
 
@@ -80,6 +84,13 @@
         </div>
     </div>
 
+    <div id="selection-box" aria-hidden="true"></div>
+    <div id="welcome-toast" class="welcome-toast">
+        <button aria-label="Close" onclick="this.parentElement.remove()">×</button>
+        <b>Welcome to Windows XP</b>
+        <span>Double-click an icon or open Start to begin.</span>
+    </div>
+
     <!-- Start Menu -->
     <div id="start-menu" class="hidden">
         <div class="start-menu-header">
@@ -112,6 +123,26 @@
                     <img src="assets/minesweep.webp" style="width: 24px; height: 24px; margin-right: 10px;" alt="">
                     <div class="start-item-text">
                         <div class="title">Minesweeper</div>
+                    </div>
+                </div>
+                <div class="start-item" onclick="openApp('paint')">
+                    <div class="start-app-glyph">🎨</div>
+                    <div class="start-item-text"><div class="title">Paint</div></div>
+                </div>
+                <div class="start-item" onclick="openApp('cv')">
+                    <div class="start-app-glyph">📄</div>
+                    <div class="start-item-text"><div class="title">SkdSam CV</div></div>
+                </div>
+                <div class="all-programs" tabindex="0"><b>All Programs</b><span>▶</span>
+                    <div class="programs-flyout">
+                        <div onclick="openApp('ie')"><img src="assets/internetexplorer.png" alt="">Internet Explorer</div>
+                        <div onclick="openApp('notepad')"><img src="assets/Notepad_WinXP.webp" alt="">Notepad</div>
+                        <div onclick="openApp('wordpad')"><span>📝</span>WordPad</div>
+                        <div onclick="openApp('cmd')"><span>▣</span>Command Prompt</div>
+                        <div onclick="openApp('paint')"><span>🎨</span>Paint</div>
+                        <div onclick="openApp('calc')"><span>🧮</span>Calculator</div>
+                        <div onclick="openApp('minesweeper')"><img src="assets/minesweep.webp" alt="">Minesweeper</div>
+                        <div onclick="openApp('my-computer')"><img src="assets/mycomputer.webp" alt="">Windows Explorer</div>
                     </div>
                 </div>
             </div>
